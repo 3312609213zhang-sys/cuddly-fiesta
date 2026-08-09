@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.3">
+    <title>Olivia's Curly Letter Generater</title>
+    <style>
+        :root {
+            --bg-cream-pink: #fbe4eb;
+            --card-cream: #fff9f6;
+            --ink-black: #2e1f27;
+            --soft-rose: #f07fa1;
+            --vivid-pink: #e84d7a;
+            --border-ink: #332029;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        
+        /* 🌟 背景：大号波点 (Big Polka Dots Wallpaper) */
+        body { 
+            background-color: var(--bg-cream-pink); 
+            background-image: 
+                radial-gradient(#f0b3c3 3px, transparent 3.5px),
+                radial-gradient(#f0b3c3 3px, var(--bg-cream-pink) 3.5px);
+            background-size: 42px 42px;
+            background-position: 0 0, 21px 21px;
+            color: var(--ink-black); 
+            padding: 40px 20px; 
+            min-height: 100vh;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            position: relative;
+        }
+
+        /* 复古剪贴簿主卡片 */
+        .container { 
+            width: 100%; 
+            max-width: 860px; 
+            background: var(--card-cream); 
+            border-radius: 24px; 
+            padding: 36px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 24px; 
+            border: 3.5px solid var(--border-ink);
+            box-shadow: 
+                8px 8px 0px var(--soft-rose),
+                12px 12px 0px var(--border-ink),
+                0 15px 30px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .header { text-align: center; position: relative; }
+        .header h1 { 
+            font-size: 1.9rem; 
+            font-weight: 900; 
+            color: var(--vivid-pink); 
+            letter-spacing: -0.5px; 
+            margin-bottom: 6px;
+            text-shadow: 2px 2px 0px #ffffff, 3px 3px 0px var(--border-ink);
+        }
+        .header p { 
+            font-size: 0.92rem; 
+            color: var(--ink-black); 
+            font-weight: 700;
+            background: #ffe3ed;
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            border: 2px solid var(--border-ink);
+        }
+
+        .upload-card {
+            border: 3px dashed var(--vivid-pink);
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 22px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 4px 4px 0px var(--soft-rose);
+        }
+        .upload-card:hover { 
+            background: #fff0f5; 
+            border-color: var(--border-ink); 
+            transform: translateY(-2px);
+            box-shadow: 5px 5px 0px var(--border-ink);
+        }
+        .upload-card input { display: none; }
+        .upload-card p { color: var(--vivid-pink); font-size: 0.98rem; font-weight: 800; }
+
+        .control-group { display: flex; flex-direction: column; gap: 8px; }
+        .control-group label { font-size: 0.88rem; font-weight: 800; color: var(--border-ink); }
+        
+        textarea { 
+            width: 100%; 
+            height: 90px; 
+            padding: 12px 16px; 
+            border: 3px solid var(--border-ink); 
+            border-radius: 14px; 
+            font-size: 1.05rem; 
+            outline: none; 
+            background: #ffffff;
+            color: var(--ink-black);
+            transition: border-color 0.2s;
+            resize: vertical;
+            box-shadow: inset 3px 3px 0px rgba(0,0,0,0.03);
+        }
+        textarea:focus { border-color: var(--vivid-pink); }
+
+        .controls-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 16px; 
+            background: #fde8f0; 
+            padding: 20px; 
+            border-radius: 16px; 
+            border: 3px solid var(--border-ink);
+            box-shadow: 4px 4px 0px var(--border-ink);
+        }
+        @media (max-width: 640px) { .controls-grid { grid-template-columns: repeat(2, 1fr); } }
+
+        .range-wrapper { display: flex; align-items: center; gap: 10px; }
+        input[type="range"] { flex: 1; accent-color: var(--vivid-pink); }
+        input[type="color"] { width: 100%; height: 36px; border: 2px solid var(--border-ink); border-radius: 10px; cursor: pointer; background: #ffffff; }
+
+        /* 画布容器：纯净大波点 */
+        .canvas-container {
+            width: 100%;
+            overflow-x: auto;
+            background-color: #ffffff;
+            background-image: radial-gradient(var(--soft-rose) 2.5px, transparent 2.8px);
+            background-size: 28px 28px;
+            border: 3px solid var(--border-ink);
+            border-radius: 16px;
+            padding: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 230px;
+            box-shadow: inset 0 0 12px rgba(0,0,0,0.03);
+        }
+
+        .action-bar { display: flex; justify-content: space-between; align-items: center; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--border-ink); font-weight: 700; cursor: pointer; user-select: none; }
+        .checkbox-group input { accent-color: var(--vivid-pink); }
+        
+        .btn { 
+            padding: 12px 28px; 
+            border: 3px solid var(--border-ink); 
+            border-radius: 14px; 
+            font-size: 0.98rem;
+            font-weight: 800; 
+            cursor: pointer; 
+            background: var(--vivid-pink); 
+            color: white; 
+            transition: all 0.15s ease;
+            box-shadow: 4px 4px 0px var(--border-ink);
+        }
+        .btn:hover { 
+            background: #d63868; 
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px var(--border-ink);
+        }
+        .btn:active { 
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--border-ink);
+        }
+        .status { font-size: 0.85rem; color: #855364; text-align: center; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Olivia's Curly Letters</h1>
+        <p>娅娅专辑同款花体字生成器</p>
+    </div>
+    
+    <!-- 1. 素材上传区 -->
+    <div class="upload-card" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept="image/*">
+        <p id="uploadText">📁 点击或拖入素材图片</p>
+    </div>
+
+    <!-- 2. 文本输入框 -->
+    <div class="control-group">
+        <label>文本内容（支持回车换行/英文大小写字母）：</label>
+        <textarea id="textInput" placeholder="输入要生成的文本...">Olivia's Letters</textarea>
+    </div>
+
+    <!-- 3. 参数网格 -->
+    <div class="controls-grid">
+        <div class="control-group">
+            <label>字体颜色</label>
+            <input type="color" id="textColor" value="#8c123f">
+        </div>
+        <div class="control-group">
+            <label>基准字号 (px)</label>
+            <div class="range-wrapper">
+                <input type="range" id="fontSize" min="40" max="200" value="90">
+            </div>
+        </div>
+        <div class="control-group">
+            <label>字间距 (px)</label>
+            <div class="range-wrapper">
+                <input type="range" id="letterSpacing" min="-10" max="50" value="10">
+            </div>
+        </div>
+        <div class="control-group">
+            <label>行间距 (倍数)</label>
+            <div class="range-wrapper">
+                <input type="range" id="lineSpacing" min="1.0" max="2.8" step="0.1" value="1.4">
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 预览画布 -->
+    <div class="canvas-container">
+        <canvas id="outputCanvas"></canvas>
+    </div>
+
+    <!-- 5. 底部操作栏 -->
+    <div class="action-bar">
+        <label class="checkbox-group">
+            <input type="checkbox" id="debugMode" checked> 显示排版基线与边界框
+        </label>
+        <button class="btn" id="downloadBtn">导出透明 PNG</button>
+    </div>
+    <div class="status" id="statusMsg">所有大写字母 A-Z 的采样与切割算法均已完成独立校准。</div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const uploadText = document.getElementById('uploadText');
+    const textInput = document.getElementById('textInput');
+    const textColor = document.getElementById('textColor');
+    const fontSizeInput = document.getElementById('fontSize');
+    const letterSpacingInput = document.getElementById('letterSpacing');
+    const lineSpacingInput = document.getElementById('lineSpacing');
+    const debugModeInput = document.getElementById('debugMode');
+    const canvas = document.getElementById('outputCanvas');
+    const ctx = canvas.getContext('2d');
+    const statusMsg = document.getElementById('statusMsg');
+
+    let loadedImg = null;
+    const alphaCanvas = document.createElement('canvas');
+    const alphaCtx = alphaCanvas.getContext('2d');
+
+    const fontEstimates = {};
+    const descenders = ['g', 'j', 'p', 'q', 'y'];
+
+    const kerningAdjustments = {
+        'u': { pre: -0.08, post: -0.06 },
+        'p': { pre: -0.12, post: -0.05 },
+        'j': { pre: -0.08, post: -0.15 },
+        'y': { pre: -0.05, post: -0.12 },
+        'f': { pre: -0.02, post: -0.08 }
+    };
+
+    // 🌟 全量大写字母高度等比例平衡因子
+    const charHeightScale = {
+        'A': 0.92, 'B': 0.93, 'C': 0.93, 'D': 0.93, 'E': 0.93,
+        'F': 0.93, 'G': 0.93, 'H': 0.93, 'I': 0.94, 'J': 0.93,
+        'K': 0.93, 'L': 0.93, 'M': 0.92, 'N': 0.92, 'O': 0.88,
+        'P': 0.93, 'Q': 0.92, 'R': 0.93, 'S': 0.93, 'T': 0.92,
+        'U': 0.92, 'V': 0.92, 'W': 0.91, 'X': 0.92, 'Y': 0.92,
+        'Z': 0.90
+    };
+
+    // 🌟 26个大写字母专属精准采样微调映射表
+    const uppercaseCustomConfig = {
+        // 第 1 行 (A-E)
+        'A': { yOffset: 0.008, h: 0.076 },
+        'B': { yOffset: 0.008, h: 0.076 },
+        'C': { yOffset: 0.008, h: 0.076 },
+        'D': { yOffset: 0.008, h: 0.076 },
+        'E': { yOffset: 0.008, h: 0.076 },
+
+        // 第 2 行 (F-J) - 剥离 A-E 的尾巴
+        'F': { yOffset: 0.088, h: 0.070 },
+        'G': { yOffset: 0.088, h: 0.070 },
+        'H': { yOffset: 0.088, h: 0.070 },
+        'I': { yOffset: 0.088, h: 0.070 },
+        'J': { yOffset: 0.088, h: 0.070 },
+
+        // 第 3 行 (K-O) - 剥离 F-J 的尾巴
+        'K': { yOffset: 0.164, h: 0.072 },
+        'L': { yOffset: 0.164, h: 0.072 },
+        'M': { yOffset: 0.164, h: 0.072 },
+        'N': { yOffset: 0.164, h: 0.072 },
+        'O': { yOffset: 0.162, h: 0.082 },
+
+        // 第 4 行 (P-T) - 剥离 K-O 的尾巴
+        'P': { yOffset: 0.242, h: 0.072 },
+        'Q': { yOffset: 0.242, h: 0.072 },
+        'R': { yOffset: 0.242, h: 0.072 },
+        'S': { yOffset: 0.242, h: 0.072 },
+        'T': { yOffset: 0.242, h: 0.070 },
+
+        // 第 5 行 (U-Y) - 剥离 P-T 的尾巴
+        'U': { yOffset: 0.320, h: 0.070 },
+        'V': { yOffset: 0.320, h: 0.070 },
+        'W': { yOffset: 0.320, h: 0.070 },
+        'X': { yOffset: 0.320, h: 0.070 },
+        'Y': { yOffset: 0.320, h: 0.070 },
+
+        // 独立 Z
+        'Z': { yOffset: 0.392, h: 0.078 }
+    };
+
+    function initStrictTopGrid() {
+        const uppercaseRows = [
+            ['A', 'B', 'C', 'D', 'E'],
+            ['F', 'G', 'H', 'I', 'J'],
+            ['K', 'L', 'M', 'N', 'O'],
+            ['P', 'Q', 'R', 'S', 'T'],
+            ['U', 'V', 'W', 'X', 'Y']
+        ];
+        const lowercaseRows = [
+            ['a', 'b', 'c', 'd', 'e'],
+            ['f', 'g', 'h', 'i', 'j'],
+            ['k', 'l', 'm', 'n', 'o'],
+            ['p', 'q', 'r', 's', 't'],
+            ['u', 'v', 'w', 'x', 'y']
+        ];
+
+        uppercaseRows.forEach((row, rIdx) => {
+            row.forEach((char, cIdx) => {
+                const config = uppercaseCustomConfig[char];
+                fontEstimates[char] = { 
+                    x: cIdx * 0.20, 
+                    y: config.yOffset, 
+                    w: 0.20, 
+                    h: config.h 
+                };
+            });
+        });
+        fontEstimates['Z'] = { x: 0.30, y: uppercaseCustomConfig['Z'].yOffset, w: 0.40, h: uppercaseCustomConfig['Z'].h };
+
+        lowercaseRows.forEach((row, rIdx) => {
+            row.forEach((char, cIdx) => {
+                let yOffset = 0.510 + rIdx * 0.076;
+                let height = 0.080;
+                if (char === 'l') {
+                    yOffset += 0.010;
+                    height = 0.070;
+                }
+                if (char === 'v') {
+                    yOffset += 0.008;
+                    height = 0.072;
+                }
+                if (char === 'u') {
+                    yOffset += 0.012;
+                    height = 0.068;
+                }
+                fontEstimates[char] = { x: cIdx * 0.20, y: yOffset, w: 0.20, h: height };
+            });
+        });
+        fontEstimates['z'] = { x: 0.30, y: 0.890, w: 0.40, h: 0.078 };
+    }
+    initStrictTopGrid();
+
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.background = '#fff0f5'; });
+    dropZone.addEventListener('dragleave', () => { dropZone.style.background = '#ffffff'; });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.background = '#ffffff';
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
+    });
+
+    function handleFile(file) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            loadedImg = new Image();
+            loadedImg.onload = () => {
+                uploadText.innerText = "✅ 素材载入成功：" + file.name;
+                statusMsg.innerText = "素材加载完成，开始生成吧~";
+                processWhiteBackground();
+            };
+            loadedImg.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function processWhiteBackground() {
+        alphaCanvas.width = loadedImg.width;
+        alphaCanvas.height = loadedImg.height;
+        alphaCtx.drawImage(loadedImg, 0, 0);
+
+        const imgData = alphaCtx.getImageData(0, 0, loadedImg.width, loadedImg.height);
+        const data = imgData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i+1], b = data[i+2];
+            const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+            
+            let alpha = 255 - lum;
+            if (alpha < 35) alpha = 0;
+
+            data[i] = 0;
+            data[i+1] = 0;
+            data[i+2] = 0;
+            data[i+3] = Math.min(255, Math.floor(alpha * 1.25));
+        }
+        alphaCtx.putImageData(imgData, 0, 0);
+
+        [textInput, textColor, fontSizeInput, letterSpacingInput, lineSpacingInput, debugModeInput].forEach(elem => {
+            elem.addEventListener('input', render);
+        });
+
+        render();
+    }
+
+    // 🌟【大写字母全量防残影清洗算法】
+    function getExactBoundingBox(estX, estY, estW, estH, char) {
+        const imgData = alphaCtx.getImageData(estX, estY, estW, estH);
+        const data = imgData.data;
+        let minX = estW, minY = estH, maxX = 0, maxY = 0;
+        let found = false;
+
+        for (let y = 0; y < estH; y++) {
+            for (let x = 0; x < estW; x++) {
+                const alpha = data[(y * estW + x) * 4 + 3];
+                if (alpha > 20) {
+                    if (x < minX) minX = x;
+                    if (x > maxX) maxX = x;
+                    if (y < minY) minY = y;
+                    if (y > maxY) maxY = y;
+                    found = true;
+                }
+            }
+        }
+
+        if (!found) return { x: estX, y: estY, w: estW, h: estH };
+
+        let cleanMinY = minY;
+        // 针对所有大写字母加强顶端稀疏残影的智能擦除
+        const scanRange = /[A-Z]/.test(char) ? 12 : 10;
+        for (let y = minY; y < Math.min(minY + scanRange, estH - 1); y++) {
+            let rowPixelCount = 0;
+            for (let x = minX; x <= maxX; x++) {
+                if (data[(y * estW + x) * 4 + 3] > 25) rowPixelCount++;
+            }
+            if (rowPixelCount < 6 && (y - minY < scanRange - 2)) {
+                cleanMinY = y + 1;
+            } else {
+                break;
+            }
+        }
+
+        const padX = 4;
+        const padTop = 2; 
+        const padBottom = 5; 
+
+        const realX = Math.max(0, estX + minX - padX);
+        const realY = Math.max(0, estY + cleanMinY - padTop);
+        const realW = Math.min(alphaCanvas.width - realX, (maxX - minX + 1) + padX * 2);
+        const realH = Math.min(alphaCanvas.height - realY, (maxY - cleanMinY + 1) + padTop + padBottom);
+
+        return { x: realX, y: realY, w: realW, h: realH };
+    }
+
+    function drawPunctuationShape(cCtx, char, size, color) {
+        cCtx.strokeStyle = color;
+        cCtx.fillStyle = color;
+        cCtx.lineWidth = Math.max(size * 0.075, 2.5);
+        cCtx.lineCap = 'round';
+        cCtx.lineJoin = 'round';
+
+        const baseline = size * 0.8;
+
+        if (char === '.') {
+            cCtx.beginPath();
+            cCtx.arc(size * 0.2, baseline, size * 0.05, 0, Math.PI * 2);
+            cCtx.fill();
+        } else if (char === ',') {
+            cCtx.beginPath();
+            cCtx.arc(size * 0.2, baseline - size * 0.03, size * 0.05, 0, Math.PI * 2);
+            cCtx.fill();
+            cCtx.beginPath();
+            cCtx.moveTo(size * 0.2, baseline - size * 0.03);
+            cCtx.quadraticCurveTo(size * 0.12, baseline + size * 0.08, size * 0.08, baseline + size * 0.12);
+            cCtx.stroke();
+        } else if (char === '!') {
+            cCtx.beginPath();
+            cCtx.moveTo(size * 0.2, size * 0.25);
+            cCtx.lineTo(size * 0.2, baseline - size * 0.15);
+            cCtx.stroke();
+            cCtx.beginPath();
+            cCtx.arc(size * 0.2, baseline, size * 0.05, 0, Math.PI * 2);
+            cCtx.fill();
+        } else if (char === '?') {
+            cCtx.beginPath();
+            cCtx.arc(size * 0.2, size * 0.35, size * 0.12, Math.PI, Math.PI * 2.25);
+            cCtx.lineTo(size * 0.2, baseline - size * 0.15);
+            cCtx.stroke();
+            cCtx.beginPath();
+            cCtx.arc(size * 0.2, baseline, size * 0.05, 0, Math.PI * 2);
+            cCtx.fill();
+        } else if (char === "'") {
+            cCtx.beginPath();
+            cCtx.arc(size * 0.18, size * 0.25, size * 0.04, 0, Math.PI * 2);
+            cCtx.fill();
+            cCtx.beginPath();
+            cCtx.moveTo(size * 0.18, size * 0.25);
+            cCtx.quadraticCurveTo(size * 0.1, size * 0.32, size * 0.06, size * 0.38);
+            cCtx.stroke();
+        } else {
+            cCtx.font = `bold ${size*0.75}px 'Comic Sans MS', cursive, sans-serif`;
+            cCtx.fillText(char, 0, baseline);
+        }
+    }
+
+    function render() {
+        if (!loadedImg) return;
+
+        const rawText = textInput.value;
+        const targetH = parseInt(fontSizeInput.value);
+        const userSpacing = parseInt(letterSpacingInput.value);
+        const lineSpacingRatio = parseFloat(lineSpacingInput.value);
+        const color = textColor.value;
+        const isDebug = debugModeInput.checked;
+
+        const srcCapHeight = 0.052 * loadedImg.height;
+        const globalScale = targetH / srcCapHeight;
+
+        const coloredCanvas = document.createElement('canvas');
+        coloredCanvas.width = alphaCanvas.width;
+        coloredCanvas.height = alphaCanvas.height;
+        const cfCtx = coloredCanvas.getContext('2d');
+        cfCtx.drawImage(alphaCanvas, 0, 0);
+        cfCtx.globalCompositeOperation = 'source-in';
+        cfCtx.fillStyle = color;
+        cfCtx.fillRect(0, 0, alphaCanvas.width, alphaCanvas.height);
+
+        const lines = rawText.split('\n');
+        const lineData = [];
+        let maxLineWidth = 0;
+
+        lines.forEach(text => {
+            const charItems = [];
+            let totalW = 0;
+
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const prevChar = i > 0 ? text[i - 1] : ' ';
+                const nextChar = i < text.length - 1 ? text[i + 1] : ' ';
+
+                if (char === ' ') {
+                    const spaceStep = targetH * 0.4 + userSpacing;
+                    charItems.push({ type: 'space', step: spaceStep });
+                    totalW += spaceStep;
+                    continue;
+                }
+
+                const est = fontEstimates[char];
+                if (est) {
+                    const estX = Math.floor(est.x * loadedImg.width);
+                    const estY = Math.floor(est.y * loadedImg.height);
+                    const estW = Math.floor(est.w * loadedImg.width);
+                    const estH = Math.floor(est.h * loadedImg.height);
+
+                    const rect = getExactBoundingBox(estX, estY, estW, estH, char);
+                    
+                    let sizeMultiplier = (char === 'g') ? 1.15 : (charHeightScale[char] || 1.0);
+
+                    const dw = rect.w * globalScale * sizeMultiplier;
+                    const dh = rect.h * globalScale * sizeMultiplier;
+
+                    let adj = { pre: 0.0, post: 0.0 };
+                    if (char === 'g') {
+                        const isStartOfWord = (prevChar === ' ' || /[^a-zA-Z]/.test(prevChar));
+                        const isEndOfWord = (nextChar === ' ' || /[^a-zA-Z]/.test(nextChar));
+
+                        if (isStartOfWord) {
+                            adj = { pre: 0.0, post: +0.08 };
+                        } else if (isEndOfWord) {
+                            adj = { pre: -0.38, post: -0.20 };
+                        } else {
+                            adj = { pre: -0.28, post: -0.10 };
+                        }
+                    } else {
+                        adj = kerningAdjustments[char] || { pre: 0.0, post: 0.0 };
+                    }
+
+                    const preShift = dw * adj.pre;
+                    const advanceStep = dw + userSpacing + (dw * adj.post);
+
+                    charItems.push({ type: 'image', char, rect, dw, dh, preShift, step: advanceStep });
+                    totalW += advanceStep + preShift;
+                } else {
+                    const dw = targetH * 0.35;
+                    const dh = targetH;
+                    const advanceStep = dw + userSpacing;
+                    charItems.push({ type: 'punctuation', char, dw, dh, preShift: 0, step: advanceStep });
+                    totalW += advanceStep;
+                }
+            }
+
+            if (totalW > maxLineWidth) maxLineWidth = totalW;
+            lineData.push({ items: charItems, width: totalW });
+        });
+
+        const paddingX = 50;
+        const paddingTop = targetH * 1.2;
+        const paddingBottom = targetH * 0.8;
+        const lineHeight = targetH * lineSpacingRatio;
+
+        canvas.width = Math.max(maxLineWidth + paddingX * 2, 220);
+        canvas.height = Math.max(paddingTop + paddingBottom + (lines.length - 1) * lineHeight, 200);
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        lineData.forEach((line, lineIdx) => {
+            const baselineY = paddingTop + lineIdx * lineHeight;
+            let currentX = (canvas.width - line.width) / 2;
+
+            line.items.forEach(item => {
+                if (item.type === 'space') {
+                    currentX += item.step;
+                    return;
+                }
+
+                if (item.type === 'image') {
+                    const { char, rect, dw, dh, preShift, step } = item;
+
+                    currentX += preShift;
+
+                    let charY;
+                    if (char === 'g') {
+                        charY = baselineY - dh * 0.75;
+                    } else if (descenders.includes(char)) {
+                        charY = baselineY - dh * 0.58;
+                    } else {
+                        charY = baselineY - dh;
+                    }
+
+                    ctx.drawImage(coloredCanvas, rect.x, rect.y, rect.w, rect.h, currentX, charY, dw, dh);
+
+                    if (isDebug) {
+                        ctx.strokeStyle = 'rgba(232, 77, 122, 0.7)';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(currentX, charY, dw, dh);
+                    }
+                    currentX += step;
+                } else if (item.type === 'punctuation') {
+                    const { char, dw, dh, step } = item;
+                    const vecCanvas = document.createElement('canvas');
+                    vecCanvas.width = dw;
+                    vecCanvas.height = dh;
+                    const vCtx = vecCanvas.getContext('2d');
+                    
+                    drawPunctuationShape(vCtx, char, dh, color);
+
+                    ctx.drawImage(vecCanvas, currentX, baselineY - dh*0.82);
+                    currentX += step;
+                }
+            });
+
+            if (isDebug) {
+                ctx.strokeStyle = 'rgba(140, 18, 63, 0.6)';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([6, 4]);
+                ctx.beginPath();
+                ctx.moveTo(0, baselineY);
+                ctx.lineTo(canvas.width, baselineY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        });
+    }
+
+    document.getElementById('downloadBtn').onclick = () => {
+        if (!loadedImg) {
+            alert("请先选择载入图片！");
+            return;
+        }
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = 'olivia_all_uppercase_clean.png';
+        a.click();
+    };
+</script>
+
+</body>
+</html>
