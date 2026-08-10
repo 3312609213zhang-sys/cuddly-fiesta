@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.3">
     <title>Olivia's Curly Letter Generater</title>
+    <!-- 引入圆润可爱字体库 -->
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Fredoka:wght@600;700&family=Quicksand:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-cream-pink: #fbe4eb;
@@ -51,22 +53,33 @@
             position: relative;
         }
 
-        .header { text-align: center; position: relative; }
+        .header { text-align: center; position: relative; margin-bottom: 5px; }
+        
+        /* 标题美化：大字号 + 可爱圆润体 + 胶囊背景贴纸 */
         .header h1 { 
-            font-size: 1.9rem; 
-            font-weight: 900; 
+            font-family: "Fredoka", "Comfortaa", "Quicksand", "Rounded Mplus 1c", "Comic Sans MS", cursive, sans-serif;
+            font-size: 2.5rem; 
+            font-weight: 700; 
             color: var(--vivid-pink); 
-            letter-spacing: -0.5px; 
-            margin-bottom: 6px;
-            text-shadow: 2px 2px 0px #ffffff, 3px 3px 0px var(--border-ink);
+            letter-spacing: 1px; 
+            margin-bottom: 10px;
+            padding: 6px 20px;
+            display: inline-block;
+            background: #fff0f5;
+            border: 3px solid var(--border-ink);
+            border-radius: 25px;
+            box-shadow: 4px 4px 0px var(--soft-rose), 6px 6px 0px var(--border-ink);
+            text-shadow: 2px 2px 0px #ffffff;
         }
+
         .header p { 
-            font-size: 0.92rem; 
+            font-family: "Fredoka", "Quicksand", sans-serif;
+            font-size: 0.95rem; 
             color: var(--ink-black); 
             font-weight: 700;
             background: #ffe3ed;
             display: inline-block;
-            padding: 4px 14px;
+            padding: 5px 16px;
             border-radius: 20px;
             border: 2px solid var(--border-ink);
         }
@@ -125,13 +138,13 @@
         input[type="range"] { flex: 1; accent-color: var(--vivid-pink); }
         input[type="color"] { width: 100%; height: 36px; border: 2px solid var(--border-ink); border-radius: 10px; cursor: pointer; background: #ffffff; }
 
-        /* 画布容器：纯净大波点 */
+        /* 画布容器 */
         .canvas-container {
             width: 100%;
             overflow-x: auto;
             background-color: #ffffff;
-            background-image: radial-gradient(var(--soft-rose) 2.5px, transparent 2.8px);
-            background-size: 28px 28px;
+            background-image: radial-gradient(var(--soft-rose) 1.2px, transparent 1.5px);
+            background-size: 16px 16px;
             border: 3px solid var(--border-ink);
             border-radius: 16px;
             padding: 28px;
@@ -175,6 +188,7 @@
 <div class="container">
     <div class="header">
         <h1>Olivia's Curly Letters</h1>
+        <br>
         <p>娅娅专辑同款花体字生成器</p>
     </div>
     
@@ -187,7 +201,7 @@
     <!-- 2. 文本输入框 -->
     <div class="control-group">
         <label>文本内容（支持回车换行/英文大小写字母）：</label>
-        <textarea id="textInput" placeholder="输入要生成的文本...">Olivia's Letters</textarea>
+        <textarea id="textInput" placeholder="输入要生成的文本...">Zebra Zoom</textarea>
     </div>
 
     <!-- 3. 参数网格 -->
@@ -228,10 +242,13 @@
         </label>
         <button class="btn" id="downloadBtn">导出透明 PNG</button>
     </div>
-    <div class="status" id="statusMsg">所有大写字母 A-Z 的采样与切割算法均已完成独立校准。</div>
+    <div class="status" id="statusMsg">共写娅艺！开始生成吧~</div>
 </div>
 
 <script>
+    // 🌟 设置素材图片的相对路径
+    const DEFAULT_IMAGE_PATH = "./d5029b8536ffff56fdffd09f852a0bbd.jpg";
+
     const fileInput = document.getElementById('fileInput');
     const dropZone = document.getElementById('dropZone');
     const uploadText = document.getElementById('uploadText');
@@ -252,7 +269,9 @@
     const fontEstimates = {};
     const descenders = ['g', 'j', 'p', 'q', 'y'];
 
+    // 🌟 增加 Z 的后置字距微调补偿（post: -0.12），向右缩紧
     const kerningAdjustments = {
+        'Z': { pre: -0.05, post: -0.12 },
         'u': { pre: -0.08, post: -0.06 },
         'p': { pre: -0.12, post: -0.05 },
         'j': { pre: -0.08, post: -0.15 },
@@ -260,7 +279,6 @@
         'f': { pre: -0.02, post: -0.08 }
     };
 
-    // 🌟 全量大写字母高度等比例平衡因子
     const charHeightScale = {
         'A': 0.92, 'B': 0.93, 'C': 0.93, 'D': 0.93, 'E': 0.93,
         'F': 0.93, 'G': 0.93, 'H': 0.93, 'I': 0.94, 'J': 0.93,
@@ -270,44 +288,32 @@
         'Z': 0.90
     };
 
-    // 🌟 26个大写字母专属精准采样微调映射表
     const uppercaseCustomConfig = {
-        // 第 1 行 (A-E)
         'A': { yOffset: 0.008, h: 0.076 },
         'B': { yOffset: 0.008, h: 0.076 },
         'C': { yOffset: 0.008, h: 0.076 },
         'D': { yOffset: 0.008, h: 0.076 },
         'E': { yOffset: 0.008, h: 0.076 },
-
-        // 第 2 行 (F-J) - 剥离 A-E 的尾巴
         'F': { yOffset: 0.088, h: 0.070 },
         'G': { yOffset: 0.088, h: 0.070 },
         'H': { yOffset: 0.088, h: 0.070 },
         'I': { yOffset: 0.088, h: 0.070 },
         'J': { yOffset: 0.088, h: 0.070 },
-
-        // 第 3 行 (K-O) - 剥离 F-J 的尾巴
         'K': { yOffset: 0.164, h: 0.072 },
         'L': { yOffset: 0.164, h: 0.072 },
         'M': { yOffset: 0.164, h: 0.072 },
         'N': { yOffset: 0.164, h: 0.072 },
         'O': { yOffset: 0.162, h: 0.082 },
-
-        // 第 4 行 (P-T) - 剥离 K-O 的尾巴
         'P': { yOffset: 0.242, h: 0.072 },
         'Q': { yOffset: 0.242, h: 0.072 },
         'R': { yOffset: 0.242, h: 0.072 },
         'S': { yOffset: 0.242, h: 0.072 },
         'T': { yOffset: 0.242, h: 0.070 },
-
-        // 第 5 行 (U-Y) - 剥离 P-T 的尾巴
         'U': { yOffset: 0.320, h: 0.070 },
         'V': { yOffset: 0.320, h: 0.070 },
         'W': { yOffset: 0.320, h: 0.070 },
         'X': { yOffset: 0.320, h: 0.070 },
         'Y': { yOffset: 0.320, h: 0.070 },
-
-        // 独立 Z
         'Z': { yOffset: 0.392, h: 0.078 }
     };
 
@@ -338,7 +344,9 @@
                 };
             });
         });
-        fontEstimates['Z'] = { x: 0.30, y: uppercaseCustomConfig['Z'].yOffset, w: 0.40, h: uppercaseCustomConfig['Z'].h };
+        
+        // 🌟【定向精修 Z】：收紧 Z 的采样宽度 w 为 0.28 (由 0.40 缩窄)，坐标偏移修正为 0.36
+        fontEstimates['Z'] = { x: 0.36, y: uppercaseCustomConfig['Z'].yOffset, w: 0.28, h: uppercaseCustomConfig['Z'].h };
 
         lowercaseRows.forEach((row, rIdx) => {
             row.forEach((char, cIdx) => {
@@ -363,6 +371,11 @@
     }
     initStrictTopGrid();
 
+    // 页面加载完成后自动加载图片
+    window.addEventListener('DOMContentLoaded', () => {
+        loadFontFromSrc(DEFAULT_IMAGE_PATH);
+    });
+
     dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.background = '#fff0f5'; });
     dropZone.addEventListener('dragleave', () => { dropZone.style.background = '#ffffff'; });
     dropZone.addEventListener('drop', (e) => {
@@ -378,15 +391,22 @@
     function handleFile(file) {
         const reader = new FileReader();
         reader.onload = (evt) => {
-            loadedImg = new Image();
-            loadedImg.onload = () => {
-                uploadText.innerText = "✅ 素材载入成功：" + file.name;
-                statusMsg.innerText = "素材加载完成，开始生成吧~";
-                processWhiteBackground();
-            };
-            loadedImg.src = evt.target.result;
+            uploadText.innerText = "✅ 素材载入成功：" + file.name;
+            loadFontFromSrc(evt.target.result);
         };
         reader.readAsDataURL(file);
+    }
+
+    function loadFontFromSrc(src) {
+        loadedImg = new Image();
+        loadedImg.onload = () => {
+            statusMsg.innerText = "💖 素材加载就绪，快来生成吧！";
+            processWhiteBackground();
+        };
+        loadedImg.onerror = () => {
+            statusMsg.innerText = "⚠️ 自动加载图片失败，请确认文件名是否匹配。";
+        };
+        loadedImg.src = src;
     }
 
     function processWhiteBackground() {
@@ -418,7 +438,6 @@
         render();
     }
 
-    // 🌟【大写字母全量防残影清洗算法】
     function getExactBoundingBox(estX, estY, estW, estH, char) {
         const imgData = alphaCtx.getImageData(estX, estY, estW, estH);
         const data = imgData.data;
@@ -441,7 +460,6 @@
         if (!found) return { x: estX, y: estY, w: estW, h: estH };
 
         let cleanMinY = minY;
-        // 针对所有大写字母加强顶端稀疏残影的智能擦除
         const scanRange = /[A-Z]/.test(char) ? 12 : 10;
         for (let y = minY; y < Math.min(minY + scanRange, estH - 1); y++) {
             let rowPixelCount = 0;
@@ -679,12 +697,12 @@
 
     document.getElementById('downloadBtn').onclick = () => {
         if (!loadedImg) {
-            alert("请先选择载入图片！");
+            alert("请先确认素材加载完成！");
             return;
         }
         const a = document.createElement('a');
         a.href = canvas.toDataURL('image/png');
-        a.download = 'olivia_all_uppercase_clean.png';
+        a.download = 'olivia_z_fixed_letters.png';
         a.click();
     };
 </script>
