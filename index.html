@@ -288,7 +288,7 @@
     });
 
     function loadFontFromBase64(src) {
-        statusMsg.innerText = "⏳ 正在加载并解码字模图片...";
+        statusMsg.innerText = "⏳ 初始字体加载中...请稍候！";
         loadedImg = new Image();
         loadedImg.onload = () => {
             statusMsg.innerText = "✅ 字模解析成功！正在进行全自动智能像素切片...";
