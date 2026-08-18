@@ -184,7 +184,7 @@
 
     <!-- 1. 文本输入框 -->
     <div class="control-group">
-        <label>文本内容（支持英文大小写、< 爱心、* 五角星）：</label>
+        <label>文本内容（支持英文大小写、< 为爱心、* 为五角星）：</label>
         <textarea id="textInput" placeholder="输入要生成的文本...">Olivia's <3 Letters *</textarea>
     </div>
 
@@ -204,7 +204,7 @@
             </div>
         </div>
 
-        <!-- 🌟 字号默认值调小为 48 -->
+        <!-- 🌟 字号默认值调小为 45 -->
         <div class="control-group">
             <label>基准字号 (px)</label>
             <div class="range-wrapper"><input type="range" id="fontSize" min="40" max="200" value="48"></div>
@@ -232,7 +232,7 @@
         </label>
         <button class="btn" id="downloadBtn">导出透明 PNG</button>
     </div>
-    <div class="status" id="statusMsg">✨ 正在解码内置字模...</div>
+    <div class="status" id="statusMsg">✨ 正在导入初始字模，请稍候...</div>
 </div>
 
 <script>
@@ -331,7 +331,7 @@
             elem.addEventListener('input', render);
         });
 
-        statusMsg.innerText = "💖 像素切片完毕，排版已自动对齐！";
+        statusMsg.innerText = "💖 共写娅语，您的娅语已生成完毕！";
         render();
     }
 
